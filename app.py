@@ -20,7 +20,7 @@ import requests
 
 from typing import List
 from db import init_db_command
-from user import User
+from user import User, trip
 
 #https://stackoverflow.com/questions/22947905/flask-example-with-post
 app = Flask(__name__)
@@ -126,6 +126,22 @@ def load_trip_print(usr):
     return retstr
         
 
+def save_trip_request(trp, usr):
+    return 0
+
+
+@app.route('/cleantech/trip/<trip_id>/requestspot', methods = ['GET', 'POST'])
+@login_required
+def trip_request(trip_id): #to keep this simple we could make it unclickable if there's no empty seats
+    if (current_user.is_authenticated):
+        tid = int(trip_id)
+        uid = current_user.get_id()
+    if (save_trip_request(tid, uid)):
+        return('Trip saved')
+    else:
+        return('Saving failed')
+
+
 
 @app.route('/cleantech/user/<usr_id>', methods = ['GET', 'POST', 'DELETE'])
 @login_required
@@ -184,10 +200,11 @@ def add_trip(usr_id, comments):
     
     #magic frontend that gets details from user goes here
     #usr.save_trip(usr.user_id, usr, date, stops, passangers, vehicle, starting_location, ending_location, comments)
-    trp = trip('Never', 'Tesla' '42.348097D-71.105963', '40.748298D-73.984827', 2, comments)
-    usr.my_trips.append(trip)
-    usr.save_trip(usr.user_id, 'Never', 2, 60, 'Tesla', '42.348097D-71.105963', '40.748298D-73.984827', 'No Drugs or alcohol')
-        
+    #trp = trip('Never', 'Tesla' '42.348097D-71.105963', '40.748298D-73.984827', 2, comments) #never instantiate a trip in this ever
+    #usr.my_trips.append(trp)
+    trp = usr.save_trip(usr.user_id, 'Never', 2, 60, 'Tesla', '42.348097D-71.105963', '40.748298D-73.984827', 'No Drugs or alcohol')
+    trp.owner = usr_id
+    usr.my_trips.append(trp)    
     whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(usr.id)
     return redirect(whereto, code=302)
 	
@@ -315,6 +332,7 @@ def logout():
         global yall
         if get_logged_in_user(current_user.get_id(), True) : yall.pop(get_logged_in_user(current_user.get_id(), True)) #This is why OOP is bad
         logout_user()
+        print('User logged out')
     return redirect('http://127.0.0.1:5000/', code=302)
 
 @app.route("/weather/", methods=['GET'])

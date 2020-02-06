@@ -135,8 +135,10 @@ class User(UserMixin):
                 (passangers[0], passangers[1], passangers[2])
         )
             
-           
+        trp = trip(date, vehicle, starting_location, ending_location, stops, comments)
+        trp.ower = usr
         db.commit()
+        return trp
         
     @staticmethod
     def load_trips(user_id):

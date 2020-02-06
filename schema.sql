@@ -27,6 +27,15 @@ CREATE TABLE trips (
 	FOREIGN KEY(user_id) REFERENCES user(user_id)
 );
 
+CREATE TABLE trip_requests (
+	request_id PRIMARY KEY,
+	driver TEXT,
+	rider TEXT,
+	trip int4,
+	PRIMARY KEY(request_id),
+	FOREIGN KEY(trip_id) REFERENCES trips(trip_id)
+);
+
 
 CREATE TABLE car (
     name TEXT PRIMARY KEY,
