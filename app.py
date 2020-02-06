@@ -127,6 +127,14 @@ def load_trip_print(usr):
         
 
 def save_trip_request(trp, usr):
+    #im tired and don't now SQL leave me alone
+    if (current_user.is_authenticated):
+        yusr = get_logged_in_user(usr)
+        if(yusr.apply_to_trip(trp, usr)):
+            return('Trip applied to')
+        else:
+            return('Something broke')
+    
     return 0
 
 
@@ -136,10 +144,10 @@ def trip_request(trip_id): #to keep this simple we could make it unclickable if 
     if (current_user.is_authenticated):
         tid = int(trip_id)
         uid = current_user.get_id()
-    if (save_trip_request(tid, uid)):
-        return('Trip saved')
-    else:
-        return('Saving failed')
+        if (save_trip_request(tid, uid)):
+            return('Trip saved')
+        else:
+            return('Saving failed')
 
 
 
@@ -204,7 +212,7 @@ def add_trip(usr_id, comments):
     #usr.my_trips.append(trp)
     trp = usr.save_trip(usr.user_id, 'Never', 2, 60, 'Tesla', '42.348097D-71.105963', '40.748298D-73.984827', 'No Drugs or alcohol')
     trp.owner = usr_id
-    usr.my_trips.append(trp)    
+    if (usr.my_trips): usr.my_trips.append(trp)    
     whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(usr.id)
     return redirect(whereto, code=302)
 	
@@ -291,8 +299,8 @@ def success():
         User.create(unique_id, users_name, users_email)
 
     print(user.user_id)
-    user.my_trips = user.load_trips(user.user_id) #load trips from DB so they are there when it is appended to yall
-    
+    maybetrip = user.load_trips(user.user_id) #load trips from DB so they are there when it is appended to yall
+    if (maybetrip): user.my_trips = maybetrip #never ever delete this line
     # Begin user session by logging the user in
     login_user(user)
     yall.append(user)

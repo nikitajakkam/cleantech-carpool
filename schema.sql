@@ -28,12 +28,12 @@ CREATE TABLE trips (
 );
 
 CREATE TABLE trip_requests (
-	request_id PRIMARY KEY,
+	request_id int4 AUTO_INCREMENT,
 	driver TEXT,
 	rider TEXT,
 	trip int4,
 	PRIMARY KEY(request_id),
-	FOREIGN KEY(trip_id) REFERENCES trips(trip_id)
+	FOREIGN KEY(trip) REFERENCES trips(trip_id)
 );
 
 

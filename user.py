@@ -29,6 +29,7 @@ class trip:
     passangers: List[str]
     vehicle: car 
     comments: str
+    applications: List[int] #requests to join
     
     # make sure to have all details loaded before initiating
     #make user select trip by date before viewing details
@@ -54,6 +55,9 @@ class trip:
         if (vrum[1]): vroom.capacity = vrum[1] #may not have
         if (vrum[2]): vroom.fuel_efficiency = vrum[2] #may also not have
         return vroom
+
+    
+            
     
     def time_of_day():
         #todo make a function that takes date and find out if morning/noon/afternoon
@@ -116,6 +120,8 @@ class User(UserMixin):
         )
         #this is gonna be gross but im tired
         
+        #TODO:
+        #not actually sure if this appends to the same trip actually
         if (passangers == 1):
             db.execute(
                 'INSERT INTO trips (passanger1) '
@@ -139,7 +145,25 @@ class User(UserMixin):
         trp.ower = usr
         db.commit()
         return trp
-        
+    
+    @staticmethod
+    def apply_to_trip(trip_id, pasngr):
+        db = get_db()
+        trp = db.execute(
+            'SELECT * FROM trips WHERE trip_id = ?', (trip_id,)
+        ).fethone()
+        if not trp: return False
+        #laded trip were applying to
+        voyage = {'driver': trp[1], 'drivee': pasngr, 'id': trip_id}
+        print(voyage)
+        db.execute(
+                'INSERT INTO trip_requests (driver, rider, trip) '
+                'VALUES (?, ?, ?)',
+                (voyage['driver'], pasngr, trip_id)
+        )
+        db.commit()
+        return True
+    
     @staticmethod
     def load_trips(user_id):
         db = get_db()
