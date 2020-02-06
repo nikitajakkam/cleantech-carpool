@@ -151,7 +151,7 @@ class User(UserMixin):
         db = get_db()
         trp = db.execute(
             'SELECT * FROM trips WHERE trip_id = ?', (trip_id,)
-        ).fethone()
+        ).fetchone()
         if not trp: return False
         #laded trip were applying to
         voyage = {'driver': trp[1], 'drivee': pasngr, 'id': trip_id}
