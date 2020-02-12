@@ -40,5 +40,5 @@ CREATE TABLE trip_requests (
 CREATE TABLE car (
     name TEXT PRIMARY KEY,
     capacity int4,
-    fuel_efficiency TEXT NOT NULL,  
+    fuel_efficiency TEXT NOT NULL,
 );

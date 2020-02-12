@@ -117,11 +117,16 @@ def load_trip_print(usr):
     retstr = ''
     tripcount = 1
     for i in usr.my_trips:
-        retstr += ('<p>Trip ' + str(tripcount) + ')\n'
+        #breaks here if recently added trip because was added without trip id
+        retstr += ('<p>Trip ' + str(i.trip_id) + ')\n'
                   + 'Driver: ' + i.owner + ' From: ' + fix_location(i.starting_place)
                   + ' To: ' + fix_location(i.destination) + ' Stops: ' + str(i.total_stops)
                   + ' When?: ' + i.date + ' Vehicle: ' + i.vehicle + '\n'
-                  + 'Notes: ' + i.comments + '</p>')
+                  + 'Notes: ' + i.comments)
+        invites = usr.load_invites(i.trip_id)
+        if (invites):
+            retstr += ' Requests: ' + str(invites)
+        retstr += '</p>'
         tripcount = tripcount + 1
     return retstr
         
@@ -300,7 +305,10 @@ def success():
 
     print(user.user_id)
     maybetrip = user.load_trips(user.user_id) #load trips from DB so they are there when it is appended to yall
-    if (maybetrip): user.my_trips = maybetrip #never ever delete this line
+    if (maybetrip): 
+        user.my_trips = maybetrip #never ever delete this line
+    else:
+        user.my_trips = []
     # Begin user session by logging the user in
     login_user(user)
     yall.append(user)
