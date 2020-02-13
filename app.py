@@ -27,7 +27,7 @@ app.secret_key = 'super-duper-secret'
 set_up = False #if server has been initalized
 
 yall : List[User] = []
-
+all_trips : List[trip] = []
 
 client_id = ''
 client_secret = ''
@@ -158,11 +158,15 @@ def trip_request(trip_id): #to keep this simple we could make it unclickable if 
         else:
             return('Saving failed')
 
-@app.route('/cleantech/trip/<trip_id>/', methods = ['GET', 'POST'])
+@app.route('/cleantech/trips/', methods = ['GET', 'POST'])
 def view_trips():
     #TODO:
     #Page that shows all open trips
-    return 0
+    if (len(all_trips) > 0):
+        return render_template('homepage_cleantech.html', starting=all_trips[0].starting_place, ending=all_trips[0].destination, date=all_trips[0].date, driver=all_trips[0].owner)
+    else:
+        
+        return 'Not possible'
 
 @app.route('/cleantech/user/<usr_id>', methods = ['GET', 'POST', 'DELETE'])
 @login_required
@@ -238,13 +242,14 @@ def make_trip(usr_id, comments):
                 print('nice input')
             
                 
-                trp = usr.save_trip(usr.user_id, time, 2, request.form['seats'], 'Tesla', '42.348097D-71.105963', (str(request.form['state'])+','+request.form['City']), 'No Drugs or alcohol')
+                trp = usr.save_trip(usr.user_id, time, 2, request.form['seats'], request.form['Make']+request.form['model'], 'Boston,MA', (str(request.form['City'])+','+request.form['State']), 'No Drugs or alcohol')
                 trp.owner = usr_id
                 trps = usr.load_trips(uid)
                 if (trps): usr.my_trips = trps
                 if (usr.my_trips): usr.my_trips.append(trp)
                 print(request.form)
-                
+                whereto = 'http://127.0.0.1:5000/cleantech/'
+                return redirect(whereto, code=302)
                 
                 
             whereto = 'http://127.0.0.1:5000/cleantech/'
@@ -345,6 +350,14 @@ def success():
         user.my_trips = []
     # Begin user session by logging the user in
     login_user(user)
+    latrips = False #loadalltrips
+    global yall
+    if (len(yall) == 0):
+        latrips = user.load_all_trips()
+        if (latrips):
+            global all_trips
+            all_trips = latrips
+    
     yall.append(user)
     user.loaded = True
     #print(user)
