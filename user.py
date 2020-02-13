@@ -54,10 +54,7 @@ class trip:
         if (vrum[2]): vroom.fuel_efficiency = vrum[2] #may also not have
         return vroom
 
-    
-    def time_of_day():
-        #todo make a function that takes date and find out if morning/noon/afternoon
-        return
+
 
 @dataclass
 class User(UserMixin):

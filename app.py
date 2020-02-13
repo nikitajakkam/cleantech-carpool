@@ -10,7 +10,6 @@ Created on Mon Sep  9 14:21:53 2019
 import sqlite3
 import json
 import os #for supressing https warnings
-import random
 
 from flask import Flask, request, redirect, url_for, render_template
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
@@ -144,7 +143,7 @@ def save_trip_request(trp, usr):
 
 def to_unix_time(month, day, year, time):
     #TODO find library that does this
-    return 'never'
+    return (time + 'on ' + str(month) + '/' + str(day) + '/' + str(year))
 
 
 
