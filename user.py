@@ -4,9 +4,6 @@ from db import get_db
 
 from dataclasses import dataclass
 from typing import List
-from sensors import sensor
-
-import random
 
 
 @dataclass
@@ -30,6 +27,7 @@ class trip:
     vehicle: car 
     comments: str
     applications: List[int] #requests to join
+    trip_id: int
     
     # make sure to have all details loaded before initiating
     #make user select trip by date before viewing details
@@ -57,8 +55,6 @@ class trip:
         return vroom
 
     
-            
-    
     def time_of_day():
         #todo make a function that takes date and find out if morning/noon/afternoon
         return
@@ -82,7 +78,7 @@ class User(UserMixin):
         self.id = user_id #needed to login user
         self.name = name
         self.email = email
-        self.trips = []
+        self.my_trips = []
         self.loaded = False
         
     @staticmethod
@@ -165,6 +161,16 @@ class User(UserMixin):
         return True
     
     @staticmethod
+    def load_invites(tripid):
+        db = get_db()
+        invites = db.execute(
+                'SELECT * FROM trip_requests WHERE trip = ?', (tripid,)
+        ).fetchall()
+        if not invites: return False
+        invite_ct = len(invites)
+        return invite_ct
+    
+    @staticmethod
     def load_trips(user_id):
         db = get_db()
         trps = db.execute(
@@ -179,6 +185,8 @@ class User(UserMixin):
                     date=i[5], vehicle=i[14], starting_location=i[2] , ending_location=i[3], stops=i[4], comments=i[15])
 #            print('Found: ',sens, sep=' ')
             trp.owner = user_id
+            print(i[0])
+            trp.trip_id = i[0]
             returned_trips.append(trp)
 
         print('User had ' + str(len(returned_trips))+ ' trips')
