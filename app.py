@@ -142,6 +142,11 @@ def save_trip_request(trp, usr):
     
     return 0
 
+def to_unix_time(month, day, year, time):
+    #TODO find library that does this
+    return 'never'
+
+
 
 @app.route('/cleantech/trip/<trip_id>/requestspot', methods = ['GET', 'POST'])
 @login_required
@@ -154,7 +159,11 @@ def trip_request(trip_id): #to keep this simple we could make it unclickable if 
         else:
             return('Saving failed')
 
-
+@app.route('/cleantech/trip/<trip_id>/', methods = ['GET', 'POST'])
+def view_trips():
+    #TODO:
+    #Page that shows all open trips
+    return 0
 
 @app.route('/cleantech/user/<usr_id>', methods = ['GET', 'POST', 'DELETE'])
 @login_required
@@ -204,23 +213,49 @@ def reroutetoaddtrip():
 
 
 
-@app.route('/cleantech/user/<usr_id>/add_trip/<comments>/' )
-#@login_required rename to make_trip
-def add_trip(usr_id, comments):
-    uid = int(usr_id)
-    usr = get_logged_in_user(uid)
-    print(comments)
-    
-    #magic frontend that gets details from user goes here
-    #usr.save_trip(usr.user_id, usr, date, stops, passangers, vehicle, starting_location, ending_location, comments)
-    #trp = trip('Never', 'Tesla' '42.348097D-71.105963', '40.748298D-73.984827', 2, comments) #never instantiate a trip in this ever
-    #usr.my_trips.append(trp)
-    trp = usr.save_trip(usr.user_id, 'Never', 2, 60, 'Tesla', '42.348097D-71.105963', '40.748298D-73.984827', 'No Drugs or alcohol')
-    trp.owner = usr_id
-    if (usr.my_trips): usr.my_trips.append(trp)    
-    whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(usr.id)
-    return redirect(whereto, code=302)
-	
+@app.route('/cleantech/user/<usr_id>/add_trip/<comments>/', methods = ['GET', 'POST'])
+@login_required #rename to make_trip
+def make_trip(usr_id, comments):
+    if (current_user.is_authenticated):        
+        if request.method == 'GET':
+            print(comments)
+            
+            #magic frontend that gets details from user goes here
+            #usr.save_trip(usr.user_id, usr, date, stops, passangers, vehicle, starting_location, ending_location, comments)
+            #trp = trip('Never', 'Tesla' '42.348097D-71.105963', '40.748298D-73.984827', 2, comments) #never instantiate a trip in this ever
+            #usr.my_trips.append(trp)
+            return render_template('Enter_a_trip_cleantech.html')
+            
+            whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(usr.id)
+            return redirect(whereto, code=302)
+    	
+        if request.method == 'POST':
+            print('madeit')
+            uid = int(usr_id)
+            usr = get_logged_in_user(uid)
+            time = to_unix_time(request.form['month'], request.form['day'], request.form['year'], request.form['time']) #not implemented
+            #### Input validation #####
+            if (request.form['state'] and request.form['seats'] and request.form['model'] and request.form['Make'] and request.form['City']):
+                print('nice input')
+            
+                
+                trp = usr.save_trip(usr.user_id, time, 2, request.form['seats'], 'Tesla', '42.348097D-71.105963', (str(request.form['state'])+','+request.form['City']), 'No Drugs or alcohol')
+                trp.owner = usr_id
+                trps = usr.load_trips(uid)
+                if (trps): usr.my_trips = trps
+                if (usr.my_trips): usr.my_trips.append(trp)
+                print(request.form)
+                
+                
+                
+            whereto = 'http://127.0.0.1:5000/cleantech/'
+            return redirect(whereto, code=302)
+                   
+
+
+
+
+
 @app.route('/')
 @login_required
 def rut():
@@ -351,7 +386,7 @@ def logout():
         print('User logged out')
     return redirect('http://127.0.0.1:5000/', code=302)
 
-@app.route("/weather/", methods=['GET'])
+@app.route("/weather/", methods=['GET', 'POST'])
 @login_required
 def textbox():
     return render_template('search.html')
