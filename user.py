@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import List
 
 
-
 @dataclass
 class car:
     name: str #Toyota Corola
@@ -55,8 +54,10 @@ class trip:
         if (vrum[2]): vroom.fuel_efficiency = vrum[2] #may also not have
         return vroom
 
-
-
+    
+    def time_of_day():
+        #todo make a function that takes date and find out if morning/noon/afternoon
+        return
 
 @dataclass
 class User(UserMixin):
@@ -190,21 +191,6 @@ class User(UserMixin):
 
         print('User had ' + str(len(returned_trips))+ ' trips')
         return returned_trips #returns because not sure about accessing pvt data on staticmethod
-
-    @staticmethod
-    def load_all_trips():
-        db = get_db()
-        trps = db.execute('SELECT * FROM trips').fetchall()
-        if not trps:
-            print('DB could not access trips')
-            return None
-        returned_trips : List[trip] = []
-        for i in trps:
-            trp = trip(
-                    date=i[5], vehicle=i[14], starting_location=i[2] , ending_location=i[3], stops=i[4], comments=i[15])
-            trp.owner = i[1]
-            trp.trip_id = i[0]
-            returned_trips.append(trp)
-        return returned_trips
+    
         
 
