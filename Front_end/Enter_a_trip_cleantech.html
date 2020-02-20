@@ -1,10 +1,32 @@
 <!DOCTYPE html>
 <html>
 
-	<head>
-		<title>forms</title>
-		<link rel="stylesheet" type="text/css" href="Enter_a_trip_cleantech.css">
-	</head>
+<head>
+	<title>forms</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="Enter_a_trip_cleantech.css">
+</head>
+
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #d00000;">
+	<a class="navbar-brand" href="homepage_cleantech.html"><img src="logo2.png" style = "width:225px;height:113px;" alt="logo"></a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	
+	<div class="collapse navbar-collapse" id="navbarSupportedContent">
+		<ul class="navbar-nav mr-auto">
+		<li class="nav-item active">
+			<a class="nav-link" href="homepage_cleantech.html">Home<span class="sr-only">(current)</span></a>
+		</li>
+		<li class="nav-item active">
+			<a class="nav-link" href="cleantech_about.html">About</a>
+		</li>
+		</ul>
+		<form class="form-inline my-2 my-lg-0" action="#" method="get"><!--can fill the action with link to BU login, but unsure how that will connect with the backend stuff-->
+		<button class="btn btn-outline-light my-2 my-sm-0" type="submit">Sign Up/Login</button>
+		</form>
+	</div>
+</nav>
 
 	<body>
 	<div class="wrapper">
@@ -13,7 +35,7 @@
 		</div>
 		<div class="container">
 
-		<form action="app.py" method="post">
+		<form action="#" method="post">
 
 			<div>
 			<strong>Destination</strong>
@@ -105,7 +127,7 @@
 					</select>
 			</label>
 			
-			<label>Date:
+			<label>Day:
 			<select class="date" name=day required>
 				<option value ="01">01</option>
 				<option value="02">02</option>
@@ -149,16 +171,16 @@
 			</Label>
 			<div>
 
-			<div>
+			
 			<label> Time:
 				<input class="time" name=time type="text" placeholder="Time" required>
 			</label>
 		
-			<select class="time" name=amorpm>
+			<select class="ampm" name = "ampm">
 				<option value="AM">AM</option>
 				<option value="PM">PM</option>
 			</select>
-			</div>
+			
 		
 			<div>
 				<strong>Vehicle Information</strong>
@@ -178,7 +200,7 @@
 			</div>
 
 			<div>
-			<input type=submit>
+				<button onclick="location.href='homepage_cleantech.html'" type="button" class="btn" style="background-color:#d00000; color: white;">Add Trip!</button>
 			</div>
 
 		</form>
