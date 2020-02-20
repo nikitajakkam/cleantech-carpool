@@ -10,7 +10,6 @@ Created on Mon Sep  9 14:21:53 2019
 import sqlite3
 import json
 import os #for supressing https warnings
-import random
 
 from flask import Flask, request, redirect, url_for, render_template
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
@@ -28,7 +27,7 @@ app.secret_key = 'super-duper-secret'
 set_up = False #if server has been initalized
 
 yall : List[User] = []
-
+all_trips : List[trip] = []
 
 client_id = ''
 client_secret = ''
@@ -142,6 +141,11 @@ def save_trip_request(trp, usr):
     
     return 0
 
+def to_unix_time(month, day, year, time):
+    #TODO find library that does this
+    return (time + 'on ' + str(month) + '/' + str(day) + '/' + str(year))
+
+
 
 @app.route('/cleantech/trip/<trip_id>/requestspot', methods = ['GET', 'POST'])
 @login_required
@@ -154,7 +158,26 @@ def trip_request(trip_id): #to keep this simple we could make it unclickable if 
         else:
             return('Saving failed')
 
+@app.route('/cleantech/trip/', methods = ['GET', 'POST'])
+def view_trips():
+    #TODO:
+    #Page that shows all open trips
+    if (request.method == 'GET'):
 
+        if (len(all_trips) > 0):
+            print('Trips: ' + str(len(all_trips)))
+            for i in range(len(all_trips)):
+                if ((all_trips[i].trip_id != None) and (all_trips[i].trip_id != 0)):
+                    print(all_trips[i].trip_id)
+                    return render_template('homepage_cleantech.html', place=all_trips[i].trip_id, starting=all_trips[i].starting_place, ending=all_trips[i].destination, date=all_trips[i].date, driver=all_trips[i].owner)
+                else:
+                    print(all_trips[i].date + all_trips[i].vehicle + str(all_trips[i].trip_id))
+        return 'Not possible'
+    if (request.method == 'POST'):
+        print("post")
+        print(request.form)
+        print(request.form['place'])
+        return('Applied')
 
 @app.route('/cleantech/user/<usr_id>', methods = ['GET', 'POST', 'DELETE'])
 @login_required
@@ -191,7 +214,7 @@ def reroutetouser():
 
 @app.route('/cleantech/')
 def home(): #Home page ish kinda thing
-    return render_template('homepage_cleantech.html')
+    return render_template('homepage.html')
 
 
 @app.route('/cleantech/add_trip/')
@@ -204,23 +227,51 @@ def reroutetoaddtrip():
 
 
 
-@app.route('/cleantech/user/<usr_id>/add_trip/<comments>/' )
-#@login_required rename to make_trip
-def add_trip(usr_id, comments):
-    uid = int(usr_id)
-    usr = get_logged_in_user(uid)
-    print(comments)
-    
-    #magic frontend that gets details from user goes here
-    #usr.save_trip(usr.user_id, usr, date, stops, passangers, vehicle, starting_location, ending_location, comments)
-    #trp = trip('Never', 'Tesla' '42.348097D-71.105963', '40.748298D-73.984827', 2, comments) #never instantiate a trip in this ever
-    #usr.my_trips.append(trp)
-    trp = usr.save_trip(usr.user_id, 'Never', 2, 60, 'Tesla', '42.348097D-71.105963', '40.748298D-73.984827', 'No Drugs or alcohol')
-    trp.owner = usr_id
-    if (usr.my_trips): usr.my_trips.append(trp)    
-    whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(usr.id)
-    return redirect(whereto, code=302)
-	
+@app.route('/cleantech/user/<usr_id>/add_trip/<comments>/', methods = ['GET', 'POST'])
+@login_required #rename to make_trip
+def make_trip(usr_id, comments):
+    if (current_user.is_authenticated):        
+        if request.method == 'GET':
+            print(comments)
+            
+            #magic frontend that gets details from user goes here
+            #usr.save_trip(usr.user_id, usr, date, stops, passangers, vehicle, starting_location, ending_location, comments)
+            #trp = trip('Never', 'Tesla' '42.348097D-71.105963', '40.748298D-73.984827', 2, comments) #never instantiate a trip in this ever
+            #usr.my_trips.append(trp)
+            return render_template('Enter_a_trip_cleantech.html')
+            
+            whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(usr.id)
+            return redirect(whereto, code=302)
+    	
+        if request.method == 'POST':
+            print('madeit')
+            uid = int(usr_id)
+            usr = get_logged_in_user(uid)
+            time = to_unix_time(request.form['month'], request.form['day'], request.form['year'], request.form['time']) #not implemented
+            #### Input validation #####
+            print('checking form')
+            if (request.form['state'] and request.form['seats'] and request.form['model'] and request.form['Make'] and request.form['City']):
+                print('Nice input')
+                
+                trp = usr.save_trip(usr.user_id, time, 2, request.form['seats'], request.form['Make']+request.form['model'], 'Boston,MA', (str(request.form['City'])+','+request.form['State']), 'No Drugs or alcohol')
+                print('saved trip')
+                trp.owner = usr_id
+                trps = usr.load_trips(uid)
+                if (trps): usr.my_trips = trps
+                if (usr.my_trips): usr.my_trips.append(trp)
+                print(request.form)
+                whereto = 'http://127.0.0.1:5000/cleantech/'
+                return redirect(whereto, code=302)
+                
+                
+            whereto = 'http://127.0.0.1:5000/cleantech/'
+            return redirect(whereto, code=302)
+                   
+
+
+
+
+
 @app.route('/')
 @login_required
 def rut():
@@ -304,13 +355,26 @@ def success():
         User.create(unique_id, users_name, users_email)
 
     print(user.user_id)
-    maybetrip = user.load_trips(user.user_id) #load trips from DB so they are there when it is appended to yall
+    maybetrip = None
+    try:
+        maybetrip = user.load_trips(user.user_id) #load trips from DB so they are there when it is appended to yall
+    except sqlite3.OperationalError:
+        pass
     if (maybetrip): 
         user.my_trips = maybetrip #never ever delete this line
     else:
         user.my_trips = []
     # Begin user session by logging the user in
     login_user(user)
+    latrips = False #loadalltrips
+    global yall
+    if (len(yall) == 0 and (maybetrip != None)):
+        
+        latrips = user.load_all_trips()
+        if (latrips):
+            global all_trips
+            all_trips = latrips
+    
     yall.append(user)
     user.loaded = True
     #print(user)
@@ -351,7 +415,7 @@ def logout():
         print('User logged out')
     return redirect('http://127.0.0.1:5000/', code=302)
 
-@app.route("/weather/", methods=['GET'])
+@app.route("/weather/", methods=['GET', 'POST'])
 @login_required
 def textbox():
     return render_template('search.html')

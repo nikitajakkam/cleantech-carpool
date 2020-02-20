@@ -7,7 +7,7 @@ CREATE TABLE user (
 );
 
 CREATE TABLE trips (
-	trip_id int4 AUTO_INCREMENT,
+	trip_id int4 NOT NULL AUTO_INCREMENT,
 	user_id TEXT NOT NULL,
 	starting_place TEXT NOT NULL,
 	destination TEXT NOT NULL,

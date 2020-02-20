@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import List
 
 
+
 @dataclass
 class car:
     name: str #Toyota Corola
@@ -54,10 +55,8 @@ class trip:
         if (vrum[2]): vroom.fuel_efficiency = vrum[2] #may also not have
         return vroom
 
-    
-    def time_of_day():
-        #todo make a function that takes date and find out if morning/noon/afternoon
-        return
+
+
 
 @dataclass
 class User(UserMixin):
@@ -109,6 +108,7 @@ class User(UserMixin):
     @staticmethod
     def save_trip(usr, date, stops, passangers, vehicle, starting_location, ending_location, comments): #temp and humidity are simulated so don't need to be saved
         db = get_db()
+        print('got db')
         db.execute(
             'INSERT INTO trips (user_id, starting_place, destination, stops, date, vehicle, comments) '
             'VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -118,19 +118,20 @@ class User(UserMixin):
         
         #TODO:
         #not actually sure if this appends to the same trip actually
-        if (passangers == 1):
+        print('inserted')
+        if (len(passangers) == 1):
             db.execute(
                 'INSERT INTO trips (passanger1) '
                 'VALUES (?)',
                 (passangers[0])
         )
-        if (passangers == 2):
+        if (len(passangers) == 2):
             db.execute(
                 'INSERT INTO trips (passanger1, passanger2) '
                 'VALUES (?, ?)',
                 (passangers[0], passangers[1])
         )
-        if (passangers == 3):
+        if (len(passangers) == 3):
             db.execute(
                 'INSERT INTO trips (passanger1) '
                 'VALUES (?, ?, ?)',
@@ -191,6 +192,21 @@ class User(UserMixin):
 
         print('User had ' + str(len(returned_trips))+ ' trips')
         return returned_trips #returns because not sure about accessing pvt data on staticmethod
-    
+
+    @staticmethod
+    def load_all_trips():
+        db = get_db()
+        trps = db.execute('SELECT * FROM trips').fetchall()
+        if not trps:
+            print('DB could not access trips')
+            return None
+        returned_trips : List[trip] = []
+        for i in trps:
+            trp = trip(
+                    date=i[5], vehicle=i[14], starting_location=i[2] , ending_location=i[3], stops=i[4], comments=i[15])
+            trp.owner = i[1]
+            trp.trip_id = i[0]
+            returned_trips.append(trp)
+        return returned_trips
         
 
