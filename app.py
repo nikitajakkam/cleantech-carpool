@@ -214,7 +214,7 @@ def reroutetouser():
 
 @app.route('/cleantech/')
 def home(): #Home page ish kinda thing
-    return render_template('homepage.html')
+    return render_template('homepage_cleantech.html')
 
 
 @app.route('/cleantech/add_trip/')
