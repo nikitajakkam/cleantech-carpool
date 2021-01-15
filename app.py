@@ -142,10 +142,24 @@ def save_trip_request(trp, usr):
     return 0
 
 def to_unix_time(month, day, year, time):
-    #TODO find library that does this
+    #TODO find library that does thiçs
     return (time + 'on ' + str(month) + '/' + str(day) + '/' + str(year))
 
+@app.route('/about/')
+def about():
+    return render_template('cleantech_about.html')
 
+@app.route('/example/')
+def example():
+    return render_template('example_trip.html')
+
+@app.route('/enteratrip/')
+def enteratrip():
+    return render_template('enter_a_trip_cleantech.html')
+
+@app.route('/login2/')
+def login2():
+    return render_template('login2.html')
 
 @app.route('/cleantech/trip/<trip_id>/requestspot', methods = ['GET', 'POST'])
 @login_required
@@ -157,6 +171,8 @@ def trip_request(trip_id): #to keep this simple we could make it unclickable if 
             return('Trip saved')
         else:
             return('Saving failed')
+        
+
 
 @app.route('/cleantech/trip/', methods = ['GET', 'POST'])
 def view_trips():
