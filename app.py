@@ -38,10 +38,30 @@ def get_google_config():
 
 #if you say this isn't secure enough
 #it was secure enough for my internship at a cyber security company
+#def custom_id_getter(withreturn=False):
+#    id_file = open('whomst.txt', 'r')
+#    whomst = id_file.read()
+#    id_file.close()
+#    global client_id
+#    client_id = whomst
+#    if (withreturn):
+#        return client_id
+#    else:
+#        return
+
+#def custom_secret_getter(withreturn=False):
+ #   secret_file = open('notouch.txt', 'r')
+ #   secret = secret_file.read()
+ #   secret_file.close()
+ #   global client_secret
+ #   client_secret = secret
+ #   if (withreturn):
+ #       return client_secret
+ #   else:
+ #       return
+
 def custom_id_getter(withreturn=False):
-    id_file = open('whomst.txt', 'r')
-    whomst = id_file.read()
-    id_file.close()
+    whomst = os.environ.get("GOOGLE_CLIENT_ID", None)
     global client_id
     client_id = whomst
     if (withreturn):
@@ -50,15 +70,14 @@ def custom_id_getter(withreturn=False):
         return
 
 def custom_secret_getter(withreturn=False):
-    secret_file = open('notouch.txt', 'r')
-    secret = secret_file.read()
-    secret_file.close()
+    secret = os.environ.get("GOOGLE_CLIENT_SECRET", None)
     global client_secret
     client_secret = secret
     if (withreturn):
         return client_secret
     else:
         return
+
 
 #################################################
 
@@ -146,14 +165,17 @@ def to_unix_time(month, day, year, time):
     return (time + 'on ' + str(month) + '/' + str(day) + '/' + str(year))
 
 @app.route('/about/')
+@login_required
 def about():
     return render_template('cleantech_about.html')
 
 @app.route('/example/')
+@login_required
 def example():
     return render_template('example_trip.html')
 
 @app.route('/enteratrip/')
+@login_required
 def enteratrip():
     return render_template('enter_a_trip_cleantech.html')
 
@@ -175,6 +197,7 @@ def trip_request(trip_id): #to keep this simple we could make it unclickable if 
 
 
 @app.route('/cleantech/trip/', methods = ['GET', 'POST'])
+@login_required
 def view_trips():
     #TODO:
     #Page that shows all open trips
@@ -229,6 +252,7 @@ def reroutetouser():
         return redirect(whereto, code=302)
 
 @app.route('/cleantech/')
+@login_required
 def home(): #Home page ish kinda thing
     return render_template('OLDhomepage_cleantech.html')
 
@@ -288,7 +312,7 @@ def make_trip(usr_id, comments):
 
 
 
-@app.route('/')
+@app.route('/cleantech')
 @login_required
 def rut():
     if (current_user.is_authenticated):
@@ -370,6 +394,13 @@ def success():
     if not User.get(unique_id):
         User.create(unique_id, users_name, users_email)
 
+
+	# Begin user session by logging the user in
+	#login_user(user)
+
+	# Send user back to homepage
+	#return redirect(url_for("begin"))
+
     print(user.user_id)
     maybetrip = None
     try:
@@ -396,7 +427,8 @@ def success():
     #print(user)
     # Send user back to homepage
     whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(user.id)
-    return redirect(whereto, code=302)
+    return redirect(url_for("begin"))
+    #return redirect(whereto, code=302)
 
 @app.route('/setup/')
 def setup():
@@ -411,14 +443,14 @@ def setup():
 #http://127.0.0.1:5000/
 @app.route('/')
 def begin():
-    global set_up
-    if (not set_up):
-        return redirect('http://127.0.0.1:5000/setup/', code=302)
+   # global set_up
+   # if (not set_up):
+      #  return redirect('http://127.0.0.1:5000/setup/', code=302)
         #redirects to setup page
     if (current_user.is_authenticated):
-        return redirect('http://127.0.0.1:5000/cleantech/', code=302)
+        return render_template('OLDhomepage_cleantech.html') #redirect('http://127.0.0.1:5000/cleantech/', code=302)
     else:
-        return render_template('login.html')
+        return render_template('login2.html')
     #redirects to setup page
 
 @app.route("/logout")
