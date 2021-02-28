@@ -11,7 +11,7 @@ import sqlite3
 import json
 import os #for supressing https warnings
 
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for, render_template, session, flash
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
 from oauthlib.oauth2 import WebApplicationClient
@@ -175,9 +175,12 @@ def example():
     return render_template('example_trip.html')
 
 @app.route('/enteratrip/')
-@login_required
 def enteratrip():
-    return render_template('enter_a_trip_cleantech.html')
+    substring = "@bu.edu"
+    if (current_user.is_authenticated) and substring in current_user.email:
+        return render_template('enter_a_trip_cleantech.html')
+    else:
+        return redirect('http://127.0.0.1:5000/nobu', code=302)
 
 @app.route('/login2/')
 def login2():
@@ -254,7 +257,14 @@ def reroutetouser():
 @app.route('/cleantech/')
 @login_required
 def home(): #Home page ish kinda thing
-    return render_template('OLDhomepage_cleantech.html')
+    emailtocheck = current_user.email
+    flash(emailtocheck)
+    if "@bu.edu" in str(emailtocheck):
+        return render_template('OLDhomepage_cleantech.html')
+    else:
+        #return render_template('nobu.html')
+        return redirect('http://127.0.0.1:5000/login2', code=302)
+
 
 
 @app.route('/cleantech/add_trip/')
@@ -330,7 +340,8 @@ def login():
         custom_secret_getter()
     if (current_user.is_authenticated):
         uid = current_user.get_id()
-        whereto = 'http://127.0.0.1:5000/cleantech/users/' + uid
+        whereto = 'http://127.0.0.1:5000/'
+        #this was in the original code - not sure if I can take out or not so I'm just commenting it: whereto = 'http://127.0.0.1:5000/cleantech/users/' + uid
         return redirect(whereto, code=302)
 
     google_config = get_google_config()
@@ -345,7 +356,6 @@ def login():
 
     print('Redirected after login')
     return redirect(request_uri)
-
 
 
 @app.route("/login/success")
@@ -380,7 +390,7 @@ def success():
     if userinfo_response.json().get("email_verified"):
         unique_id = userinfo_response.json()["sub"]
         users_email = userinfo_response.json()["email"]
-#        picture = userinfo_response.json()["picture"] # todo: from exaple breaks without.
+        picture = userinfo_response.json()["picture"] # todo: from exaple breaks without.
         users_name = userinfo_response.json()["given_name"]
     else:
         return "User email not available or not verified by Google.", 400
@@ -389,17 +399,9 @@ def success():
     # by Google
     user = User(
         user_id=unique_id, name=users_name, email=users_email)
-
     # Doesn't exist? Add it to the database.
     if not User.get(unique_id):
         User.create(unique_id, users_name, users_email)
-
-
-	# Begin user session by logging the user in
-	#login_user(user)
-
-	# Send user back to homepage
-	#return redirect(url_for("begin"))
 
     print(user.user_id)
     maybetrip = None
@@ -426,9 +428,9 @@ def success():
     user.loaded = True
     #print(user)
     # Send user back to homepage
-    whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(user.id)
-    return redirect(url_for("begin"))
-    #return redirect(whereto, code=302)
+    #this was in the original code - not sure if I can take out or not so I'm just commenting it: whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(user.id)
+    whereto = 'http://127.0.0.1:5000/'
+    return redirect(whereto, code=302)
 
 @app.route('/setup/')
 def setup():
@@ -447,11 +449,18 @@ def begin():
    # if (not set_up):
       #  return redirect('http://127.0.0.1:5000/setup/', code=302)
         #redirects to setup page
-    if (current_user.is_authenticated):
+    substring = "@bu.edu"
+    if (current_user.is_authenticated) and substring in current_user.email:
         return render_template('OLDhomepage_cleantech.html') #redirect('http://127.0.0.1:5000/cleantech/', code=302)
+    elif (current_user.is_authenticated):
+        return redirect('http://127.0.0.1:5000/nobu', code=302)
     else:
-        return render_template('login2.html')
+        return redirect('http://127.0.0.1:5000/login2', code=302)
     #redirects to setup page
+@app.route("/nobu")
+@login_required
+def nobu():
+    return render_template('nobu.html')
 
 @app.route("/logout")
 @login_required
