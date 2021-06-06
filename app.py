@@ -254,18 +254,6 @@ def reroutetouser():
         whereto = 'http://127.0.0.1:5000/cleantech/user/' + uid
         return redirect(whereto, code=302)
 
-@app.route('/cleantech/')
-@login_required
-def home(): #Home page ish kinda thing
-    emailtocheck = current_user.email
-    flash(emailtocheck)
-    if "@bu.edu" in str(emailtocheck):
-        return render_template('OLDhomepage_cleantech.html')
-    else:
-        #return render_template('nobu.html')
-        return redirect('http://127.0.0.1:5000/login2', code=302)
-
-
 
 @app.route('/cleantech/add_trip/')
 @login_required
@@ -317,10 +305,6 @@ def make_trip(usr_id, comments):
             whereto = 'http://127.0.0.1:5000/cleantech/'
             return redirect(whereto, code=302)
                    
-
-
-
-
 
 @app.route('/cleantech')
 @login_required
