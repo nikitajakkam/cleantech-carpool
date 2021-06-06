@@ -11,7 +11,7 @@ import sqlite3
 import json
 import os #for supressing https warnings
 
-from flask import Flask, request, redirect, url_for, render_template
+from flask import Flask, request, redirect, url_for, render_template, session, flash
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 
 from oauthlib.oauth2 import WebApplicationClient
@@ -38,10 +38,30 @@ def get_google_config():
 
 #if you say this isn't secure enough
 #it was secure enough for my internship at a cyber security company
+#def custom_id_getter(withreturn=False):
+#    id_file = open('whomst.txt', 'r')
+#    whomst = id_file.read()
+#    id_file.close()
+#    global client_id
+#    client_id = whomst
+#    if (withreturn):
+#        return client_id
+#    else:
+#        return
+
+#def custom_secret_getter(withreturn=False):
+ #   secret_file = open('notouch.txt', 'r')
+ #   secret = secret_file.read()
+ #   secret_file.close()
+ #   global client_secret
+ #   client_secret = secret
+ #   if (withreturn):
+ #       return client_secret
+ #   else:
+ #       return
+
 def custom_id_getter(withreturn=False):
-    id_file = open('whomst.txt', 'r')
-    whomst = id_file.read()
-    id_file.close()
+    whomst = os.environ.get("GOOGLE_CLIENT_ID", None)
     global client_id
     client_id = whomst
     if (withreturn):
@@ -50,15 +70,14 @@ def custom_id_getter(withreturn=False):
         return
 
 def custom_secret_getter(withreturn=False):
-    secret_file = open('notouch.txt', 'r')
-    secret = secret_file.read()
-    secret_file.close()
+    secret = os.environ.get("GOOGLE_CLIENT_SECRET", None)
     global client_secret
     client_secret = secret
     if (withreturn):
         return client_secret
     else:
         return
+
 
 #################################################
 
@@ -146,16 +165,22 @@ def to_unix_time(month, day, year, time):
     return (time + 'on ' + str(month) + '/' + str(day) + '/' + str(year))
 
 @app.route('/about/')
+@login_required
 def about():
     return render_template('cleantech_about.html')
 
 @app.route('/example/')
+@login_required
 def example():
     return render_template('example_trip.html')
 
 @app.route('/enteratrip/')
 def enteratrip():
-    return render_template('enter_a_trip_cleantech.html')
+    substring = "@bu.edu"
+    if (current_user.is_authenticated) and substring in current_user.email:
+        return render_template('enter_a_trip_cleantech.html')
+    else:
+        return redirect('http://127.0.0.1:5000/nobu', code=302)
 
 @app.route('/login2/')
 def login2():
@@ -175,6 +200,7 @@ def trip_request(trip_id): #to keep this simple we could make it unclickable if 
 
 
 @app.route('/cleantech/trip/', methods = ['GET', 'POST'])
+@login_required
 def view_trips():
     #TODO:
     #Page that shows all open trips
@@ -228,10 +254,6 @@ def reroutetouser():
         whereto = 'http://127.0.0.1:5000/cleantech/user/' + uid
         return redirect(whereto, code=302)
 
-@app.route('/cleantech/')
-def home(): #Home page ish kinda thing
-    return render_template('OLDhomepage_cleantech.html')
-
 
 @app.route('/cleantech/add_trip/')
 @login_required
@@ -284,11 +306,7 @@ def make_trip(usr_id, comments):
             return redirect(whereto, code=302)
                    
 
-
-
-
-
-@app.route('/')
+@app.route('/cleantech')
 @login_required
 def rut():
     if (current_user.is_authenticated):
@@ -306,7 +324,8 @@ def login():
         custom_secret_getter()
     if (current_user.is_authenticated):
         uid = current_user.get_id()
-        whereto = 'http://127.0.0.1:5000/cleantech/users/' + uid
+        whereto = 'http://127.0.0.1:5000/'
+        #this was in the original code - not sure if I can take out or not so I'm just commenting it: whereto = 'http://127.0.0.1:5000/cleantech/users/' + uid
         return redirect(whereto, code=302)
 
     google_config = get_google_config()
@@ -321,7 +340,6 @@ def login():
 
     print('Redirected after login')
     return redirect(request_uri)
-
 
 
 @app.route("/login/success")
@@ -356,7 +374,7 @@ def success():
     if userinfo_response.json().get("email_verified"):
         unique_id = userinfo_response.json()["sub"]
         users_email = userinfo_response.json()["email"]
-#        picture = userinfo_response.json()["picture"] # todo: from exaple breaks without.
+        picture = userinfo_response.json()["picture"] # todo: from exaple breaks without.
         users_name = userinfo_response.json()["given_name"]
     else:
         return "User email not available or not verified by Google.", 400
@@ -365,7 +383,6 @@ def success():
     # by Google
     user = User(
         user_id=unique_id, name=users_name, email=users_email)
-
     # Doesn't exist? Add it to the database.
     if not User.get(unique_id):
         User.create(unique_id, users_name, users_email)
@@ -395,7 +412,8 @@ def success():
     user.loaded = True
     #print(user)
     # Send user back to homepage
-    whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(user.id)
+    #this was in the original code - not sure if I can take out or not so I'm just commenting it: whereto = 'http://127.0.0.1:5000/cleantech/user/'+str(user.id)
+    whereto = 'http://127.0.0.1:5000/'
     return redirect(whereto, code=302)
 
 @app.route('/setup/')
@@ -411,15 +429,22 @@ def setup():
 #http://127.0.0.1:5000/
 @app.route('/')
 def begin():
-    global set_up
-    if (not set_up):
-        return redirect('http://127.0.0.1:5000/setup/', code=302)
+   # global set_up
+   # if (not set_up):
+      #  return redirect('http://127.0.0.1:5000/setup/', code=302)
         #redirects to setup page
-    if (current_user.is_authenticated):
-        return redirect('http://127.0.0.1:5000/cleantech/', code=302)
+    substring = "@bu.edu"
+    if (current_user.is_authenticated) and substring in current_user.email:
+        return render_template('OLDhomepage_cleantech.html') #redirect('http://127.0.0.1:5000/cleantech/', code=302)
+    elif (current_user.is_authenticated):
+        return redirect('http://127.0.0.1:5000/nobu', code=302)
     else:
-        return render_template('login.html')
+        return redirect('http://127.0.0.1:5000/login2', code=302)
     #redirects to setup page
+@app.route("/nobu")
+@login_required
+def nobu():
+    return render_template('nobu.html')
 
 @app.route("/logout")
 @login_required
