@@ -5,8 +5,9 @@ Created on Mon Sep  9 14:21:53 2019
 @author: Felipe Dale Figeman
 
 """
-#example from https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
 
+#example from https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-i-hello-world
+#testing
 import sqlite3
 import json
 import os #for supressing https warnings
