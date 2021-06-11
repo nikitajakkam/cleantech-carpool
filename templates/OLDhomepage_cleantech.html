@@ -51,181 +51,24 @@
 		<th>Trip Name</th>
 		<th>From</th>
 		<th>To</th>
-		<th>Date/Time</th>
+		<th>Date</th>
+		<th>Time</th>
 		<th>Driver</th>
 	</tr>
-	<tr>
-		<td> 
-			<a href="example_trip.html" class="link_to_trip">Example
-		</td>
-		<td> 
-			{{ starting }}
-		</td>
-		<td> 
-			{{ ending }}
-		</td>
-		<td> 
-			{{ date }}
-		</td>
-		<td>
-			{{ driver }}
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-	<tr>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample 
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-		<td> 
-			Sample
-		</td>
-	</tr>
-</table>
+	<br>
+	{% if trips %}
 
+		{% for trip in trips %}
+		<tr>
+		<td>Sample</td>
+		<td>{{trip[0]}}</td>
+		<td>{{trip[1]}}</td>
+		<td>{{trip[2]}}</td>
+		<td>{{trip[3]}}</td>
+		<td>{{trip[4]}}</td>
+		</tr>
+		{% endfor %}
+{% endif %}
 
 </div>
 <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>

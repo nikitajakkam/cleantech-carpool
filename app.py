@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS trips (
 	starting_place TEXT NOT NULL,
 	destination TEXT NOT NULL,
 	stops int,
-	date TEXT NOT NULL,
+	date DATE,
+    time TIME,
 	passanger1 TEXT,
 	passanger2 TEXT,
 	passanger3 TEXT,
@@ -57,6 +58,7 @@ CREATE TABLE IF NOT EXISTS trips (
 	passanger8 TEXT,
 	vehicle TEXT NOT NULL,
 	comments TEXT NOT NULL,
+    active INTEGER NOT NULL,
 	FOREIGN KEY(user_id) REFERENCES user(user_id)
 );
 """)
@@ -143,10 +145,6 @@ def get_logged_in_user(user_id, index=False):
     SELECT user_id 
     FROM user
     """)
-    list1=curs.fetchall()
-    if current_user.user_id not in list1:
-        curs.execute("INSERT INTO User (user_id,name, email) VALUES ('{0}','{1}','{2}'".format(current_user.user_id,current_user.name,current_user.email))
-        conn.commit()
     if (loc >= 0):
         usr = yall[loc]
         return loc if (index) else usr
@@ -237,9 +235,10 @@ def enteratrip():
     if (current_user.is_authenticated) and substring in current_user.email:
         if request.method=='POST':
             cursor=conn.cursor()
-            dest=request.form.get("destination")
-            month=request.form.get("state")
-            date=request.form.get("day")
+            dest=request.form.get("city")
+            date=request.form.get("date")
+            time=request.form.get("time")
+            model=request.form.get("model")
             uid=current_user.user_id
             cursor.execute("SELECT max(trip_id) FROM trips")
             tid=cursor.fetchall()[0][0]
@@ -247,9 +246,11 @@ def enteratrip():
                 tid=1
             else:
                 tid=tid+1
-            cursor.execute("INSERT INTO trips (trip_id,user_id,starting_place,destination,date,vehicle,comments) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')".format(tid,uid,'NONE',dest,date,'CIVIC','NONE'))
+            cursor.execute("INSERT INTO trips (trip_id,user_id,starting_place,destination,date,vehicle,comments,active,time) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')".format(tid,uid,'Boston',dest,date,model,'NONE',1,time))
             conn.commit()
-            return render_template('enter_a_trip_cleantech.html',trip1=tid)
+            cursor.execute("SELECT starting_place,destination,date,time,user.name FROM trips JOIN user ON user.user_id=trips.user_id WHERE trips.active=1")
+            trips=cursor.fetchall()
+            return render_template('enter_a_trip_cleantech.html')
         else:
             return render_template('enter_a_trip_cleantech.html')
     else:
@@ -508,7 +509,15 @@ def begin():
         #redirects to setup page
     substring = "@bu.edu"
     if (current_user.is_authenticated) and substring in current_user.email:
-        return render_template('OLDhomepage_cleantech.html') #redirect('http://127.0.0.1:5000/cleantech/', code=302)
+        cursor=conn.cursor()
+        cursor.execute("SELECT email FROM user WHERE email='{0}'".format(current_user.email))
+        list1=cursor.fetchall()[0][0]
+        if list1 is None:
+            cursor.execute("INSERT INTO User (user_id,name, email) VALUES ('{0}','{1}','{2}')".format(current_user.user_id,current_user.name,current_user.email))
+        conn.commit()
+        cursor.execute("SELECT starting_place,destination,date,time,user.name FROM trips JOIN user ON user.user_id=trips.user_id WHERE trips.active=1")
+        trips=cursor.fetchall()
+        return render_template('OLDhomepage_cleantech.html',trips=trips) #redirect('http://127.0.0.1:5000/cleantech/', code=302)
     elif (current_user.is_authenticated):
         return redirect('http://127.0.0.1:5000/nobu', code=302)
     else:
