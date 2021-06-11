@@ -28,6 +28,55 @@ set_up = False #if server has been initalized
 
 yall : List[User] = []
 all_trips : List[trip] = []
+conn=sqlite3.connect('BUcleantech.db',check_same_thread=False)
+curs=conn.cursor()
+curs.execute("""
+CREATE TABLE IF NOT EXISTS user (
+  user_id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  emissions_avoided int,
+  email TEXT UNIQUE NOT NULL,
+  venmo TEXT UNIQUE
+);
+""")
+curs.execute("""
+CREATE TABLE IF NOT EXISTS trips (
+	trip_id INT PRIMARY KEY,
+	user_id TEXT NOT NULL,
+	starting_place TEXT NOT NULL,
+	destination TEXT NOT NULL,
+	stops int,
+	date TEXT NOT NULL,
+	passanger1 TEXT,
+	passanger2 TEXT,
+	passanger3 TEXT,
+	passanger4 TEXT,
+	passanger5 TEXT,
+	passanger6 TEXT,
+	passanger7 TEXT,
+	passanger8 TEXT,
+	vehicle TEXT NOT NULL,
+	comments TEXT NOT NULL,
+	FOREIGN KEY(user_id) REFERENCES user(user_id)
+);
+""")
+curs.execute("""
+CREATE TABLE IF NOT EXISTS trip_requests (
+	request_id int4,
+	driver TEXT,
+	rider TEXT,
+	trip int4,
+	PRIMARY KEY(request_id),
+	FOREIGN KEY(trip) REFERENCES trips(trip_id)
+);
+""")
+curs.execute("""
+CREATE TABLE IF NOT EXISTS car (
+    name TEXT PRIMARY KEY,
+    capacity int4,
+    fuel_efficiency TEXT NOT NULL
+);
+""")
 
 client_id = ''
 client_secret = ''
@@ -67,7 +116,7 @@ def custom_id_getter(withreturn=False):
     if (withreturn):
         return client_id
     else:
-        return
+        return 
 
 def custom_secret_getter(withreturn=False):
     secret = os.environ.get("GOOGLE_CLIENT_SECRET", None)
@@ -90,6 +139,14 @@ def get_logged_in_user(user_id, index=False):
         if (int(yall[i].user_id) == uid):
             loc = i
             break
+    curs.execute("""
+    SELECT user_id 
+    FROM user
+    """)
+    list1=curs.fetchall()
+    if current_user.user_id not in list1:
+        curs.execute("INSERT INTO User (user_id,name, email) VALUES ('{0}','{1}','{2}'".format(current_user.user_id,current_user.name,current_user.email))
+        conn.commit()
     if (loc >= 0):
         usr = yall[loc]
         return loc if (index) else usr
@@ -174,11 +231,27 @@ def about():
 def example():
     return render_template('example_trip.html')
 
-@app.route('/enteratrip/')
+@app.route('/enteratrip/',methods=['GET', 'POST'])
 def enteratrip():
     substring = "@bu.edu"
     if (current_user.is_authenticated) and substring in current_user.email:
-        return render_template('enter_a_trip_cleantech.html')
+        if request.method=='POST':
+            cursor=conn.cursor()
+            dest=request.form.get("destination")
+            month=request.form.get("state")
+            date=request.form.get("day")
+            uid=current_user.user_id
+            cursor.execute("SELECT max(trip_id) FROM trips")
+            tid=cursor.fetchall()[0][0]
+            if tid is None:
+                tid=1
+            else:
+                tid=tid+1
+            cursor.execute("INSERT INTO trips (trip_id,user_id,starting_place,destination,date,vehicle,comments) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}')".format(tid,uid,'NONE',dest,date,'CIVIC','NONE'))
+            conn.commit()
+            return render_template('enter_a_trip_cleantech.html',trip1=tid)
+        else:
+            return render_template('enter_a_trip_cleantech.html')
     else:
         return redirect('http://127.0.0.1:5000/nobu', code=302)
 
@@ -468,4 +541,4 @@ os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
 if __name__=='__main__':
-    app.run()
+    app.run(debug="true")
