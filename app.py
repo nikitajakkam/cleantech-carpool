@@ -510,8 +510,9 @@ def begin():
     substring = "@bu.edu"
     if (current_user.is_authenticated) and substring in current_user.email:
         cursor=conn.cursor()
+
         cursor.execute("SELECT email FROM user WHERE email='{0}'".format(current_user.email))
-        list1=cursor.fetchone()[0]
+        list1=cursor.fetchone()
         if list1 is None:
             cursor.execute("INSERT INTO User (user_id,name, email) VALUES ('{0}','{1}','{2}')".format(current_user.user_id,current_user.name,current_user.email))
         conn.commit()
