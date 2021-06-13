@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS trips (
 	passanger6 TEXT,
 	passanger7 TEXT,
 	passanger8 TEXT,
+    seats_avail INTEGER NOT NULL,
 	vehicle TEXT NOT NULL,
 	comments TEXT NOT NULL,
     active INTEGER NOT NULL,
@@ -240,13 +241,14 @@ def enteratrip():
             time=request.form.get("time")
             model=request.form.get("model")
             uid=current_user.user_id
+            seats_avail=request.form.get("seats")
             cursor.execute("SELECT max(trip_id) FROM trips")
             tid=cursor.fetchall()[0][0]
             if tid is None:
                 tid=1
             else:
                 tid=tid+1
-            cursor.execute("INSERT INTO trips (trip_id,user_id,starting_place,destination,date,vehicle,comments,active,time) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}')".format(tid,uid,'Boston',dest,date,model,'NONE',1,time))
+            cursor.execute("INSERT INTO trips (trip_id,user_id,starting_place,destination,date,vehicle,comments,active,time,seats_avail) VALUES ('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')".format(tid,uid,'Boston',dest,date,model,'NONE',1,time,seats_avail))
             conn.commit()
             cursor.execute("SELECT starting_place,destination,date,time,user.name FROM trips JOIN user ON user.user_id=trips.user_id WHERE trips.active=1")
             trips=cursor.fetchall()
@@ -510,13 +512,12 @@ def begin():
     substring = "@bu.edu"
     if (current_user.is_authenticated) and substring in current_user.email:
         cursor=conn.cursor()
-
         cursor.execute("SELECT email FROM user WHERE email='{0}'".format(current_user.email))
         list1=cursor.fetchone()
         if list1 is None:
             cursor.execute("INSERT INTO User (user_id,name, email) VALUES ('{0}','{1}','{2}')".format(current_user.user_id,current_user.name,current_user.email))
         conn.commit()
-        cursor.execute("SELECT starting_place,destination,date,time,user.name FROM trips JOIN user ON user.user_id=trips.user_id WHERE trips.active=1")
+        cursor.execute("SELECT starting_place,destination,date,time,user.name,seats_avail FROM trips JOIN user ON user.user_id=trips.user_id WHERE trips.active=1")
         trips=cursor.fetchall()
         return render_template('OLDhomepage_cleantech.html',trips=trips) #redirect('http://127.0.0.1:5000/cleantech/', code=302)
     elif (current_user.is_authenticated):

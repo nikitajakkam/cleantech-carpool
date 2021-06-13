@@ -54,6 +54,7 @@
 		<th>Date</th>
 		<th>Time</th>
 		<th>Driver</th>
+    <th>Seats Available</th>
 	</tr>
 	<br>
 	{% if trips %}
@@ -66,6 +67,7 @@
 		<td>{{trip[2]}}</td>
 		<td>{{trip[3]}}</td>
 		<td>{{trip[4]}}</td>
+    <td>{{trip[5]}}</td>
 		</tr>
 		{% endfor %}
 {% endif %}
